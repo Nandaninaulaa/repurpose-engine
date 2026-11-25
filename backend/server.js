@@ -7,7 +7,6 @@ const { generateForPlatform, PLATFORM_PROMPTS, USE_LIVE_API } = require('./gener
 const { computeProfile } = require('./profile');
 const { rankArchive } = require('./decay');
 const { fetchMetrics, engagementScore, isLiveConfigured } = require('./metrics');
-const { validatePostContent } = require('./validation');
 
 const app = express();
 app.use(cors());
@@ -18,9 +17,9 @@ const PLATFORMS = Object.keys(PLATFORM_PROMPTS);
 
 // -- Posts: create a post and generate all platform variants --
 app.post('/api/posts', async (req, res) => {
-  const validation = validatePostContent(req.body?.content);
-  if (validation.error) return res.status(400).json({ error: validation.error });
-  const content = validation.value;
+  const { content } = req.body;
+  if (typeof content !== 'string') return res.status(400).json({ error: 'content must be a string' });
+  if (!content.trim()) return res.status(400).json({ error: 'content is required' });
 
   const db = load();
   const post = { id: nextId(db.posts), content, createdAt: new Date().toISOString() };
@@ -176,11 +175,7 @@ app.post('/api/archive/:id/resurface', async (req, res) => {
 
 const PORT = process.env.PORT || 3001;
 
-if (require.main === module) {
-  app.listen(PORT, () => {
-    console.log(`Repurposing engine running on http://localhost:${PORT}`);
-    console.log(USE_LIVE_API ? 'Using live Anthropic API for generation.' : 'No ANTHROPIC_API_KEY set — using offline mock generator.');
-  });
-}
-
-module.exports = app;
+app.listen(PORT, () => {
+  console.log(`Repurposing engine running on http://localhost:${PORT}`);
+  console.log(USE_LIVE_API ? 'Using live Anthropic API for generation.' : 'No ANTHROPIC_API_KEY set — using offline mock generator.');
+});
