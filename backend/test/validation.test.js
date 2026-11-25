@@ -18,8 +18,7 @@ test('rejects empty and whitespace-only strings', () => {
   }
 });
 
-test('returns trimmed content for valid strings', () => {
-  assert.deepEqual(validatePostContent('  Hello, world!  '), {
-    value: 'Hello, world!',
-  });
+test('preserves valid strings, including surrounding whitespace', () => {
+  const content = '  Hello, world!  ';
+  assert.deepEqual(validatePostContent(content), { value: content });
 });
