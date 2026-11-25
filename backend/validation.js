@@ -3,12 +3,11 @@ function validatePostContent(content) {
     return { error: 'content must be a string' };
   }
 
-  const normalized = content.trim();
-  if (!normalized) {
+  if (!content.trim()) {
     return { error: 'content is required' };
   }
 
-  return { value: normalized };
+  return { value: content };
 }
 
 module.exports = { validatePostContent };
