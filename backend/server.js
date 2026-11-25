@@ -7,6 +7,7 @@ const { generateForPlatform, PLATFORM_PROMPTS, USE_LIVE_API } = require('./gener
 const { computeProfile } = require('./profile');
 const { rankArchive } = require('./decay');
 const { fetchMetrics, engagementScore, isLiveConfigured } = require('./metrics');
+const { validatePostContent } = require('./validation');
 
 const app = express();
 app.use(cors());
@@ -17,9 +18,9 @@ const PLATFORMS = Object.keys(PLATFORM_PROMPTS);
 
 // -- Posts: create a post and generate all platform variants --
 app.post('/api/posts', async (req, res) => {
-  const { content } = req.body;
-  if (typeof content !== 'string') return res.status(400).json({ error: 'content must be a string' });
-  if (!content.trim()) return res.status(400).json({ error: 'content is required' });
+  const validation = validatePostContent(req.body?.content);
+  if (validation.error) return res.status(400).json({ error: validation.error });
+  const content = validation.value;
 
   const db = load();
   const post = { id: nextId(db.posts), content, createdAt: new Date().toISOString() };
